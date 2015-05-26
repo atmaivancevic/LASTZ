@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# currently set with a Chimp query seq, at 94% coverage (since Krishna uses 94% identity):
+# currently set with a Chimp query seq, at 90% coverage (Krishna uses 94% identity):
 
 #Parameters:
 # $1 = Animal (Genome Name)
@@ -21,7 +21,7 @@ mkdir -p Hits
 cd /data01/Genomes/Vertebrates/$1
 for ((i=$2; i<=$3; i++));
 do
-( lastz /data01/Genomes/Vertebrates/$1/seq$i.fa[unmask,multiple] /home/atma/Testing/Chimp/Chimp_chr2A_106355237_106360249.rev.fasta[unmask] --chain --gapped --coverage=94 --ambiguous=n --ambiguous=iupac --format=general-:name2,start2,end2,score,strand2,size2,name1,start1,end1 > /mnt/Results/HT_Candidates/L1/$1/Hits/LASTZ_L1_$1_seq$i ) &
+( lastz /data01/Genomes/Vertebrates/$1/seq$i.fa[unmask,multiple] /home/atma/Testing/Chimp/Chimp_chr2A_106355237_106360249.rev.fasta[unmask] --chain --gapped --coverage=90 --ambiguous=n --ambiguous=iupac --format=general-:name2,start2,end2,score,strand2,size2,name1,start1,end1 > /mnt/Results/HT_Candidates/L1/$1/Hits/LASTZ_L1_$1_seq$i ) &
 if (( $i % 30 == 0 )); then wait; fi # Limit to 30 concurrent subshells, so that it doesn't open thousands at once
 done
 wait
@@ -112,7 +112,7 @@ cd Clusters
 cp ../Strand_Correct/AllSeqs_sc_L1_$1.fasta .
 
 #Sort the sequences by length
-usearch -sortbylength AllSeqs_sc_L1_$1.fasta -output L1_$1_seqs_sorted_HTcand_94.fasta
+usearch -sortbylength AllSeqs_sc_L1_$1.fasta -output L1_$1_seqs_sorted_HTcand_90.fasta
 
 
 
