@@ -7,6 +7,7 @@
 # Vertebrates
 
 # # Low-seq-count genomes (<10,000 seqs)
+./screen_genome_for_HT_candidate.sh Opossum 1 10
 ./screen_genome_for_HT_candidate.sh Stickleback 1 24
 ./screen_genome_for_HT_candidate.sh ZebraFinch 1 35
 ./screen_genome_for_HT_candidate.sh Horse 1 36
