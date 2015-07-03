@@ -21,7 +21,7 @@ mkdir -p Hits
 cd /data01/Genomes/Vertebrates/$1
 for ((i=$2; i<=$3; i++));
 do
-( lastz /data01/Genomes/Vertebrates/$1/seq$i.fa[unmask,multiple] /home/atma/Testing/HT_candidate_queries.fasta[unmask] --chain --gapped --coverage=90 --ambiguous=n --ambiguous=iupac --format=general-:name2,start2,end2,score,strand2,size2,name1,start1,end1 > /mnt/Results/HT_Candidates/L1/$1/Hits/LASTZ_L1_$1_seq$i ) &
+( lastz /data01/Genomes/Vertebrates/$1/seq$i.fa[unmask,multiple] /home/atma/Testing/HT_candidate_queries.fasta[unmask] --chain --gapped --coverage=70 --identity=90 --ambiguous=n --ambiguous=iupac --format=general-:name2,start2,end2,score,strand2,size2,name1,start1,end1 > /mnt/Results/HT_Candidates/L1/$1/Hits/LASTZ_L1_$1_seq$i ) &
 if (( $i % 30 == 0 )); then wait; fi # Limit to 30 concurrent subshells, so that it doesn't open thousands at once
 done
 wait
