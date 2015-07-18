@@ -17,14 +17,10 @@ cd $1
 mkdir -p Hits
 
 #Align L1 query seqs to all Genome seqs, using LASTZ
-# & and wait indicate the use of multiple cores
 cd /data01/Genomes/Vertebrates/$1
-for ((i=$2; i<=$3; i++));
-do
-( lastz /data01/Genomes/Vertebrates/$1/seq$i.fa[unmask,multiple] /home/atma/Testing/HT_candidate_queries.fasta[unmask] --chain --gapped --coverage=70 --identity=90 --ambiguous=n --ambiguous=iupac --format=general-:name2,start2,end2,score,strand2,size2,name1,start1,end1 > /mnt/Results/HT_Candidates/L1/$1/Hits/LASTZ_L1_$1_seq$i ) &
-if (( $i % 30 == 0 )); then wait; fi # Limit to 30 concurrent subshells, so that it doesn't open thousands at once
-done
-wait
+
+#use parallel --dryrun to see how it's going to look
+parallel lastz {} /home/atma/Testing/HT_candidate_queries.fasta[unmask,multiple] --chain --gapped --coverage=70 --identity=90 --ambiguous=n --ambiguous=iupac --format=general-:name2,start2,end2,score,strand2,size2,name1,start1,end1 '>' /mnt/Results/HT_Candidates/L1/$1/Hits/LASTZ_L1_$1_{/.} ::: /data01/Genomes/Vertebrates/$1/seq*.fa
 
 cd /mnt/Results/HT_Candidates/L1/$1/Hits
 
@@ -34,11 +30,12 @@ find -size  0 -print0 | xargs -0 rm
 #Concatenate all hit files into one file
 cat LASTZ_L1_$1_seq* > LASTZ_L1_$1_AllSeqs
 
-#Rearrange columns to put files in BED-like form, to be able to use BEDTools 
+#Rearrange columns to put files in BED-like form, to be able to use BEDTools
+# & and wait indicate the use of multiple cores, limit to 10 cores 
 for ((i=1; i<=$3; i++));
 do
 ( awk '{print $7 "\t" $8 "\t" $9 "\t" $1 "\t" "1" "\t" $5}' LASTZ_L1_$1_seq$i >> BedFormat_L1_$1_seq$i ) &
-if (( $i % 30 == 0 )); then wait; fi
+if (( $i % 10 == 0 )); then wait; fi
 done
 wait
 
@@ -46,14 +43,14 @@ wait
 for ((i=1; i<=$3; i++));
 do
 ( mergeBed -s -nms -i BedFormat_L1_$1_seq$i > Merged_L1_$1_seq$i.bed ) &
-if (( $i % 30 == 0 )); then wait; fi
+if (( $i % 10 == 0 )); then wait; fi
 done 
 wait
 
 for ((i=1; i<=$3; i++));
 do
 ( fastaFromBed -fi /data01/Genomes/Vertebrates/$1/seq$i.fa -bed Merged_L1_$1_seq$i.bed -fo L1_$1_seq$i.fasta ) &
-if (( $i % 30 == 0 )); then wait; fi
+if (( $i % 10 == 0 )); then wait; fi
 done
 wait
 
@@ -72,14 +69,14 @@ cd Strand_Correct
 for ((i=1; i<=$3; i++));
 do
 ( grep -h -w '+' ../Hits/Merged_L1_$1_seq$i.bed | fastaFromBed -fi /data01/Genomes/Vertebrates/$1/seq$i.fa -bed stdin -fo Plus_strand_L1_$1_seq$i.fasta ) &
-if (( $i % 30 == 0 )); then wait; fi
+if (( $i % 10 == 0 )); then wait; fi
 done
 wait
 
 for ((i=1; i<=$3; i++));
 do
 ( grep -h -w '-' ../Hits/Merged_L1_$1_seq$i.bed | fastaFromBed -fi /data01/Genomes/Vertebrates/$1/seq$i.fa -bed stdin -fo Minus_strand_L1_$1_seq$i.fasta ) &
-if (( $i % 30 == 0 )); then wait; fi
+if (( $i % 10 == 0 )); then wait; fi
 done
 wait
 
@@ -87,7 +84,7 @@ wait
 for ((i=1; i<=$3; i++));
 do
 ( RevComp Minus_strand_L1_$1_seq$i.fasta RevComp_L1_$1_seq$i.fasta ) &
-if (( $i % 30 == 0 )); then wait; fi
+if (( $i % 10 == 0 )); then wait; fi
 done
 wait
 
@@ -95,7 +92,7 @@ wait
 for ((i=1; i<=$3; i++));
 do
 ( cat RevComp_L1_$1_seq$i.fasta Plus_strand_L1_$1_seq$i.fasta > StrandCorrect_L1_$1_seq$i.fasta ) &
-if (( $i % 30 == 0 )); then wait; fi
+if (( $i % 10 == 0 )); then wait; fi
 done
 wait
 
