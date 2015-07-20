@@ -19,8 +19,13 @@ mkdir -p Hits
 #Align L1 query seqs to all Genome seqs, using LASTZ
 cd /data01/Genomes/Vertebrates/$1
 
-#use parallel --dryrun to see how it's going to look
-parallel lastz {} /home/atma/Testing/HT_candidate_queries.fasta[unmask,multiple] --chain --gapped --coverage=70 --identity=90 --ambiguous=n --ambiguous=iupac --format=general-:name2,start2,end2,score,strand2,size2,name1,start1,end1 '>' /mnt/Results/HT_Candidates/L1/$1/Hits/LASTZ_L1_$1_{/.} ::: /data01/Genomes/Vertebrates/$1/seq*.fa
+#bash ranges don't accept variables
+#so can't do: parallel lastz 'seq{}.fa query.fa > LASTZ_results_seq{}' ::: {$2..$3}
+#have to change the {$2..$3} to $(seq $2 $3)
+#and then need to avoid problems if the number of arguments is bigger than a shell line can fit
+#so change this to: seq $2 $3 | parallel
+#(use parallel --dryrun to test it first)
+seq $2 $3 | parallel lastz '/data01/Genomes/Vertebrates/'$1'/seq{}.fa /home/atma/Testing/HT_candidate_queries.fasta[unmask,multiple] --chain --gapped --coverage=70 --identity=90 --ambiguous=n --ambiguous=iupac --format=general-:name2,start2,end2,score,strand2,size2,name1,start1,end1 > /mnt/Results/HT_Candidates/L1/'$1'/Hits/LASTZ_L1_'$1'_seq{}' 
 
 cd /mnt/Results/HT_Candidates/L1/$1/Hits
 
